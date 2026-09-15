@@ -1,0 +1,11 @@
+# Per-environment credentials and configuration
+**/.env
+**/.env.*
+!**/.env.example
+
+# SQL Server backup artifacts
+*.bak
+*.backup
+*.bacpac
+*.log
+*.tmp
