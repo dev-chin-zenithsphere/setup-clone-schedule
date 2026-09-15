@@ -473,21 +473,6 @@ TcpTestSucceeded : True
 
 ---
 
-# Security
-
-ไม่ควร Commit Password จริงลง Git เช่น:
-
-```powershell
-$sourcePassword = "P@ssw0rd"
-$destPassword   = "P@ssw0rd"
-```
-
-ควรใช้วิธีจัดเก็บ Credential ที่ปลอดภัย เช่น PostgreSQL `pgpass.conf` หรือ Windows Credential Management ตาม Environment ที่ใช้งาน
-
-เพิ่มไฟล์ที่มี Credential ลง `.gitignore` หากมีการแยก Configuration ออกจาก Script
-
----
-
 # Summary
 
 ระบบทำงานในรูปแบบ:

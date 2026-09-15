@@ -32,7 +32,7 @@ $destDb         = "aoi_db_clone"
 $destUser       = "postgres"
 
 # ใส่ Password ของ PostgreSQL เครื่องปลายทาง
-$destPassword   = "P@ssw0rd"
+$destPassword   = "<DESTINATION_PASSWORD>"
 
 # ============================================================
 # BACKUP

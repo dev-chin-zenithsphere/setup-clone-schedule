@@ -15,7 +15,7 @@ $destDb   = "aoi_db_clone"
 $destUser = "postgres"
 
 # Password
-$env:PGPASSWORD = "P@ssw0rd"
+$env:PGPASSWORD = "<DESTINATION_PASSWORD>"
 
 # Temporary backup
 $backupDir  = "C:\backup\postgres"
