@@ -362,7 +362,7 @@ FROM sys.tables;
         "/Action:Export" `
         "/SourceConnectionString:$sourceConnection" `
         "/TargetFile:$bacpac" `
-        "/p:VerifyExtraction=True"
+        "/p:VerifyExtraction=False"
 
     if ($LASTEXITCODE -ne 0) {
         throw "SqlPackage export failed."

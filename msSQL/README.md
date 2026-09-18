@@ -4,6 +4,8 @@
 
 > คำเตือน: ทุกครั้งที่รัน สคริปต์จะลบฐานข้อมูลปลายทางเดิมและสร้างใหม่ ห้ามกำหนดฐานปลายทางเป็น Production database
 
+ก่อนเริ่มใช้งาน ให้เตรียม SQL Server ปลายทางตาม [คู่มือการตั้งค่า MSSQL Server](README-MSSQL-Server-Setup.md) โดยเฉพาะ Mixed Mode Authentication, `sa`, TCP/IP และ Firewall port `1433`.
+
 ## สิ่งที่ถูก clone
 
 - ตาราง, schema, data, index, constraint, view, stored procedure และ function
@@ -66,6 +68,8 @@ MSSQL_BACPAC_DIRECTORY=C:\backup\mssql
 ```
 
 สคริปต์จะแสดง 5 ขั้นตอน: ตรวจต้นทาง, export BACPAC, ตรวจปลายทาง, ลบ/import ฐานปลายทาง และตรวจสอบผลลัพธ์
+
+สคริปต์ใช้ `VerifyExtraction=False` ขณะ export เพื่อรองรับ view หรือ computed column ที่อ้าง object แบบ fully-qualified หาก import ไม่ผ่าน ให้แก้ schema reference นั้นในฐานต้นทางก่อนเปิดใช้งานตาม schedule
 
 ## ตั้งเวลารันอัตโนมัติ
 
