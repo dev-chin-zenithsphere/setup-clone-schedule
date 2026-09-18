@@ -59,5 +59,5 @@ Get-ScheduledTaskInfo -TaskName "SQL Server Database Auto Clone"
 
 - ทดสอบ manual clone ก่อนตั้ง schedule ทุกครั้ง
 - สำรอง destination หากข้อมูลเดิมสำคัญ เพราะ script จะลบทิ้งก่อน import
-- ใช้ IP หรือ DNS ที่ตรงกับ TLS certificate ของ SQL Server; อย่าตั้ง `TrustServerCertificate=True`
+- ถ้า SQL Server ใช้ self-signed/untrusted certificate ให้ตั้ง `MSSQL_TRUST_SERVER_CERTIFICATE=true`; การตั้งค่านี้ข้ามการยืนยันตัวตนของ certificate และควรใช้เฉพาะเครือข่ายที่เชื่อถือได้
 - รักษาสิทธิ์ของโฟลเดอร์โครงการและ `.env` ให้เฉพาะ account ที่รัน Scheduled Task เข้าถึงได้

@@ -75,6 +75,9 @@ $SourceUseWindowsAuthentication =
 $SourceUser = $env:MSSQL_SOURCE_USER
 $SourcePassword = $env:MSSQL_SOURCE_PASSWORD
 
+$TrustServerCertificate =
+    $env:MSSQL_TRUST_SERVER_CERTIFICATE -match "^(true|1|yes)$"
+
 $DestinationServer = $env:MSSQL_DESTINATION_SERVER
 $DestinationDatabase = $env:MSSQL_DESTINATION_DATABASE
 $DestinationUser = $env:MSSQL_DESTINATION_USER
@@ -126,15 +129,6 @@ foreach ($item in $requiredVariables.GetEnumerator()) {
     if ([string]::IsNullOrWhiteSpace($item.Value)) {
         throw "Missing required .env variable: $($item.Key)"
     }
-}
-
-if (-not $SourceUseWindowsAuthentication) {
-    throw @"
-MSSQL_SOURCE_USE_WINDOWS_AUTHENTICATION must be true.
-
-Current script configuration expects Windows Authentication
-for the local source SQL Server.
-"@
 }
 
 # ============================================================
@@ -196,27 +190,25 @@ $bacpac = Join-Path `
 # SOURCE CONNECTION STRING
 # ============================================================
 #
-# Local SQL Server:
-# - Windows Authentication
-# - Encryption enabled
-# - Trust self-signed/untrusted certificate
+# Source SQL Server:
+# - Windows or SQL Authentication, according to .env
+# - TLS certificate validation is required
 #
 # ============================================================
 
 $sourceConnection = if ($SourceUseWindowsAuthentication) {
-    "Server=$SourceServer;Database=$SourceDatabase;Integrated Security=True;Encrypt=True;TrustServerCertificate=False"
+    "Server=$SourceServer;Database=$SourceDatabase;Integrated Security=True;Encrypt=True;TrustServerCertificate=$TrustServerCertificate"
 } else {
-    "Server=$SourceServer;Database=$SourceDatabase;User ID=$SourceUser;Password=$SourcePassword;Encrypt=True;TrustServerCertificate=False"
+    "Server=$SourceServer;Database=$SourceDatabase;User ID=$SourceUser;Password=$SourcePassword;Encrypt=True;TrustServerCertificate=$TrustServerCertificate"
 }
 
 # ============================================================
 # DESTINATION CONNECTION STRING
 # ============================================================
 #
-# Remote SQL Server:
+# Destination SQL Server:
 # - SQL Authentication
-# - Encryption enabled
-# - Trust self-signed/untrusted certificate
+# - TLS certificate validation is required
 #
 # ============================================================
 
@@ -226,7 +218,7 @@ $destinationConnection = @(
     "User ID=$DestinationUser"
     "Password=$DestinationPassword"
     "Encrypt=True"
-    "TrustServerCertificate=False"
+    "TrustServerCertificate=$TrustServerCertificate"
 ) -join ";"
 
 # ============================================================
@@ -274,6 +266,10 @@ function Invoke-SqlCmd {
         "-Q", $Query
     )
 
+    if ($TrustServerCertificate) {
+        $arguments += "-C"
+    }
+
     if ($WindowsAuthentication) {
 
         # Windows Authentication
@@ -307,7 +303,12 @@ Write-Host ""
 Write-Host "SOURCE"
 Write-Host "  Server   : $SourceServer"
 Write-Host "  Database : $SourceDatabase"
-Write-Host "  Auth     : Windows Authentication"
+if ($SourceUseWindowsAuthentication) {
+    Write-Host "  Auth     : Windows Authentication"
+}
+else {
+    Write-Host "  Auth     : SQL Authentication ($SourceUser)"
+}
 Write-Host ""
 
 Write-Host "DESTINATION"
