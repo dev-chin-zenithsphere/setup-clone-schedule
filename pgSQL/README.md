@@ -346,7 +346,7 @@ Backup                : inventory_db_yyyy-MM-dd_HHmmss.backup
 ```powershell
 powershell.exe `
     -NoProfile `
-    -ExecutionPolicy Bypass `
+    -ExecutionPolicy RemoteSigned `
     -File "C:\scripts\clone-db.ps1"
 ```
 
@@ -392,7 +392,7 @@ Clone Database
 ```powershell
 powershell.exe `
     -NoProfile `
-    -ExecutionPolicy Bypass `
+    -ExecutionPolicy RemoteSigned `
     -File "C:\scripts\setup-clone-schedule.ps1"
 ```
 

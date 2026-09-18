@@ -13,8 +13,8 @@ if (-not (Test-Path -LiteralPath $ScriptPath)) {
     throw "Clone script not found: $ScriptPath"
 }
 
-$actionArguments = "-NoProfile -ExecutionPolicy Bypass -File `"$ScriptPath`""
-$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $actionArguments
+$actionArguments = "-NoProfile -ExecutionPolicy RemoteSigned -File `"$ScriptPath`""
+$action = New-ScheduledTaskAction -Execute (Join-Path $PSHOME "powershell.exe") -Argument $actionArguments
 $trigger = New-ScheduledTaskTrigger -Daily -At $At
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours $ExecutionTimeLimitHours)
 

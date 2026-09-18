@@ -1,4 +1,19 @@
 $ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
+
+$envFile = Join-Path $PSScriptRoot ".env"
+if (-not (Test-Path -LiteralPath $envFile)) { throw "Configuration file not found: $envFile. Copy .env.example to .env first." }
+$allowedEnv = @('PG_SOURCE_HOST','PG_SOURCE_PORT','PG_SOURCE_DATABASE','PG_SOURCE_USER','PG_SOURCE_PASSWORD','PG_DESTINATION_HOST','PG_DESTINATION_PORT','PG_DESTINATION_DATABASE','PG_DESTINATION_USER','PG_DESTINATION_PASSWORD','PG_BACKUP_DIRECTORY')
+Get-Content -LiteralPath $envFile | ForEach-Object {
+    $line = $_.Trim()
+    if (-not $line -or $line.StartsWith('#')) { return }
+    $parts = $line -split '=', 2
+    if ($parts.Count -ne 2) { throw "Invalid .env line." }
+    $name = $parts[0].Trim(); $value = $parts[1].Trim()
+    if ($name -notin $allowedEnv) { throw "Unsupported .env variable: $name" }
+    if (($value.StartsWith('"') -and $value.EndsWith('"')) -or ($value.StartsWith("'") -and $value.EndsWith("'"))) { $value = $value.Substring(1, $value.Length - 2) }
+    Set-Item -Path "Env:$name" -Value $value
+}
 
 # ============================================================
 # PostgreSQL Tools
@@ -13,32 +28,38 @@ $psql      = "C:\Program Files\PostgreSQL\18\bin\psql.exe"
 # เครื่องปัจจุบัน
 # ============================================================
 
-$sourceHost     = "127.0.0.1"
-$sourcePort     = "5432"
-$sourceDb       = "aoi_db"
-$sourceUser     = "postgres"
+$sourceHost = $env:PG_SOURCE_HOST
+$sourcePort = $env:PG_SOURCE_PORT
+$sourceDb = $env:PG_SOURCE_DATABASE
+$sourceUser = $env:PG_SOURCE_USER
 
 # ใส่ Password ของ PostgreSQL เครื่องต้นทาง
-$sourcePassword = "postgres"
+$sourcePassword = $env:PG_SOURCE_PASSWORD
 
 # ============================================================
 # DESTINATION DATABASE
 # Zenith Server ผ่าน Tailscale
 # ============================================================
 
-$destHost       = "100.116.118.114"
-$destPort       = "5432"
-$destDb         = "aoi_db_clone"
-$destUser       = "postgres"
+$destHost = $env:PG_DESTINATION_HOST
+$destPort = $env:PG_DESTINATION_PORT
+$destDb = $env:PG_DESTINATION_DATABASE
+$destUser = $env:PG_DESTINATION_USER
 
 # ใส่ Password ของ PostgreSQL เครื่องปลายทาง
-$destPassword   = "<DESTINATION_PASSWORD>"
+$destPassword = $env:PG_DESTINATION_PASSWORD
 
 # ============================================================
 # BACKUP
 # ============================================================
 
-$backupDir = "C:\backup\postgres"
+$backupDir = $env:PG_BACKUP_DIRECTORY
+
+foreach ($name in @('sourceHost','sourcePort','sourceDb','sourceUser','sourcePassword','destHost','destPort','destDb','destUser','destPassword','backupDir')) { if ([string]::IsNullOrWhiteSpace((Get-Variable -Name $name -ValueOnly))) { throw "Missing required configuration value: $name" } }
+foreach ($port in @($sourcePort, $destPort)) { if ($port -notmatch '^\d+$' -or [int]$port -lt 1 -or [int]$port -gt 65535) { throw "Invalid PostgreSQL port." } }
+foreach ($database in @($sourceDb, $destDb)) { if ($database -notmatch '^[A-Za-z_][A-Za-z0-9_$]{0,62}$') { throw "Invalid PostgreSQL database name." } }
+if ($destDb -in @('postgres','template0','template1')) { throw "Destination database must not be a system database." }
+if ($sourceHost -eq $destHost -and $sourcePort -eq $destPort -and $sourceDb -eq $destDb) { throw "Source and destination must not refer to the same database." }
 
 $timestamp = Get-Date -Format "yyyy-MM-dd_HHmmss"
 

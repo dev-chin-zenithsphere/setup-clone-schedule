@@ -1,11 +1,11 @@
-# powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\scripts\scripts-setup-clone-schedule.ps1"
+# powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File ".\setup-clone-schedule.ps1"
 # ============================================================
 # AOI DATABASE AUTO CLONE - SCHEDULE
 # Every day at 12:00 PM
 # ============================================================
 
 $taskName   = "AOI Database Auto Clone"
-$scriptPath = "C:\scripts\clone-db.ps1"
+$scriptPath = Join-Path $PSScriptRoot "clone-db.ps1"
 
 # ------------------------------------------------------------
 # Check Clone Script
@@ -20,8 +20,8 @@ if (!(Test-Path $scriptPath)) {
 # ------------------------------------------------------------
 
 $action = New-ScheduledTaskAction `
-    -Execute "powershell.exe" `
-    -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`""
+    -Execute (Join-Path $PSHOME "powershell.exe") `
+    -Argument "-NoProfile -ExecutionPolicy RemoteSigned -File `"$scriptPath`""
 
 # ------------------------------------------------------------
 # Trigger
